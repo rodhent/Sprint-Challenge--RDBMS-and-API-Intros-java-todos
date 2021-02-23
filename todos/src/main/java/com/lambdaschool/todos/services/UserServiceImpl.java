@@ -1,6 +1,8 @@
 package com.lambdaschool.todos.services;
 
+import com.lambdaschool.todos.models.Todo;
 import com.lambdaschool.todos.models.User;
+import com.lambdaschool.todos.repository.TodoRepository;
 import com.lambdaschool.todos.repository.UserRepository;
 import com.lambdaschool.todos.views.UserNameCountTodos;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,16 +26,22 @@ public class UserServiceImpl implements UserService
     @Autowired
     private UserRepository userrepos;
 
+    @Autowired
+    private TodosService todoService;
+
     /**
      * Connects this service to the auditing service in order to get current user name
      */
     @Autowired
     private UserAuditing userAuditing;
 
+    @Autowired
+    private TodoRepository todoRepository;
+
     public User findUserById(long id) throws EntityNotFoundException
     {
         return userrepos.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("User id " + id + " not found!"));
+                .orElseThrow(() -> new EntityNotFoundException("User id " + id + " not found!"));
     }
 
     @Override
@@ -45,8 +53,8 @@ public class UserServiceImpl implements UserService
          * iterate over the iterator set and add each element to an array list.
          */
         userrepos.findAll()
-            .iterator()
-            .forEachRemaining(list::add);
+                .iterator()
+                .forEachRemaining(list::add);
         return list;
     }
 
@@ -55,7 +63,7 @@ public class UserServiceImpl implements UserService
     public void delete(long id)
     {
         userrepos.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("User id " + id + " not found!"));
+                .orElseThrow(() -> new EntityNotFoundException("User id " + id + " not found!"));
         userrepos.deleteById(id);
     }
 
@@ -66,17 +74,21 @@ public class UserServiceImpl implements UserService
         User newUser = new User();
 
         newUser.setUsername(user.getUsername()
-            .toLowerCase());
+                .toLowerCase());
         newUser.setPassword(user.getPassword());
         newUser.setPrimaryemail(user.getPrimaryemail()
-            .toLowerCase());
-
+                .toLowerCase());
+        for(Todo u : user.getTodos())
+        {
+            newUser.getTodos().add(new Todo(newUser, u.getDescription()));
+        }
         return userrepos.save(newUser);
     }
 
     @Override
     public List<UserNameCountTodos> getCountUserTodos()
     {
-        return null;
+        List<UserNameCountTodos> myList = userrepos.getCountUserTodos();
+        return myList;
     }
 }

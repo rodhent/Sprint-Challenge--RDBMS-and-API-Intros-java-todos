@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The entity allowing interaction with the users table
@@ -26,7 +28,7 @@ public class User extends Auditable
      * The username (String). Cannot be null and must be unique
      */
     @Column(nullable = false,
-        unique = true)
+            unique = true)
     private String username;
 
     /**
@@ -40,9 +42,14 @@ public class User extends Auditable
      * Primary email account of user. Could be used as the userid. Cannot be null and must be unique.
      */
     @Column(nullable = false,
-        unique = true)
+            unique = true)
     @Email
     private String primaryemail;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties(value = "user", allowSetters = true)
+    private Set<Todo> todos = new HashSet<>();
+
 
     /**
      * Default constructor used primarily by the JPA.
@@ -61,9 +68,9 @@ public class User extends Auditable
      * @param primaryemail The primary email (String) of the user
      */
     public User(
-        String username,
-        String password,
-        String primaryemail)
+            String username,
+            String password,
+            String primaryemail)
     {
         setUsername(username);
         setPassword(password);
@@ -160,5 +167,13 @@ public class User extends Auditable
     public void setPassword(String password)
     {
         this.password = password;
+    }
+
+    public Set<Todo> getTodos() {
+        return todos;
+    }
+
+    public void setTodos(Set<Todo> todos) {
+        this.todos = todos;
     }
 }
